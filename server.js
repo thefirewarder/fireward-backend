@@ -12,7 +12,13 @@ app.use(express.json());
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const { price, userId } = req.body;
-    console.log("🧾 Creating session for", userId, "price:", price);
+    console.log("🔹 Incoming body:", req.body);
+    console.log("🔹 Environment:", process.env.BASE_URL);
+
+    const success = `https://${process.env.BASE_URL}/success`;
+    const cancel = `https://${process.env.BASE_URL}/cancel`;
+    console.log("🔹 Success URL:", success);
+    console.log("🔹 Cancel URL:", cancel);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -27,17 +33,18 @@ app.post("/create-checkout-session", async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `https://${process.env.BASE_URL}/success`,
-      cancel_url: `https://${process.env.BASE_URL}/cancel`,
+      success_url: success,
+      cancel_url: cancel,
     });
 
-    console.log("✅ Stripe session created:", session.id);
-    res.json({ id: session.id }); // 👈 THIS MUST EXIST
+    console.log("✅ Created session:", session.id);
+    res.json({ id: session.id });
   } catch (err) {
-    console.error("❌ Stripe Error:", err);
+    console.error("❌ Stripe failed:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
