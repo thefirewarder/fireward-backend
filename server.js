@@ -1,11 +1,22 @@
-const express = require("express");
 const cors = require("cors");
+const express = require("express");
 const Stripe = require("stripe");
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET);
 
-app.use(cors({ origin: ["https://firewardgames.com","https://editor.p5js.org","preview.p5js.org"] })); // allow your main site
+// --- FIX START ---
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // for testing, allow all
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+// --- FIX END ---
+
 app.use(express.json());
 
 // ✅ this must exist:
