@@ -5,7 +5,7 @@ const Stripe = require("stripe");
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET);
 
-app.use(cors({ origin: ["https://firewardgames.com","https://editor.p5js.org"] })); // allow your main site
+app.use(cors({ origin: ["https://firewardgames.com","https://editor.p5js.org","preview.p5js.org"] })); // allow your main site
 app.use(express.json());
 
 // ✅ this must exist:
