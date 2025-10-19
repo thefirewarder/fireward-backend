@@ -1,43 +1,44 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const cors = require("cors");
 const Stripe = require("stripe");
+
 const app = express();
-
 const stripe = Stripe(process.env.STRIPE_SECRET);
+
+app.use(cors({ origin: "https://firewardgames.com" })); // allow your main site
 app.use(express.json());
-app.use(bodyParser.raw({ type: "application/json" }));
 
-app.get("/", (req, res) => {
-  res.send("Fireward Payments Backend Running!");
-});
-
+// ✅ this must exist:
 app.post("/create-checkout-session", async (req, res) => {
   try {
     const { price, userId } = req.body;
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: [{
         price_data: {
           currency: "usd",
-          product_data: { name: `Game coins for ${userId}` },
-          unit_amount: price,
+          product_data: { name: `Coins for ${userId}` },
+          unit_amount: price
         },
-        quantity: 1,
+        quantity: 1
       }],
       success_url: `${process.env.BASE_URL}/success`,
-      cancel_url: `${process.env.BASE_URL}/cancel`,
+      cancel_url: `${process.env.BASE_URL}/cancel`
     });
+
     res.json({ id: session.id });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/webhook", (req, res) => {
-  console.log("Webhook received!");
-  res.sendStatus(200);
+// optional: a simple test route
+app.get("/", (req, res) => {
+  res.send("🔥 Fireward backend is running");
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Running on port ${port}`));
+app.listen(port, () => console.log(`Server running on port ${port}`));
